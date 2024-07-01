@@ -1,0 +1,64 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins{
+    id 'org.jetbrains.kotlin.jvm' version '1.9.0'
+    id 'java-gradle-plugin'
+    id 'com.google.devtools.ksp' version '1.9.0-1.0.11'
+}
+
+
+
+
+dependencies {
+    implementation gradleApi()
+    implementation("com.android.tools.build:gradle:8.2.0")
+    implementation("org.gradle.kotlin:gradle-kotlin-dsl-plugins:4.2.1")
+    implementation "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0"
+}
+
+
+kotlin{
+    compilerOptions{
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
+
+}
+
+
+gradlePlugin {
+    plugins {
+        baseConfig {
+            // 在 app 模块需要通过 id 引用这个插件
+            id = 'configLib'
+            // 实现这个插件的类的路径
+            implementationClass = 'com.arahelio.manager.BaseConfigManager'
+        }
+        appVersion{
+            id = 'versionLib'
+            implementationClass = 'com.arahelio.manager.AppVersionManager'
+
+        }
+
+        commonLibraries{
+            id = "commonDep"
+            implementationClass = "com.arahelio.manager.CommonDepManager"
+        }
+        composeLibraries{
+            id = "composeDep"
+            implementationClass = "com.arahelio.manager.ComposeDepManager"
+        }
+//        localLibraries{
+//            id = "localLibDep"
+//            implementationClass = "com.vegle.manager.LocalProjectDepManager"
+//        }
+        modulePlugins{
+            id = "modulePlugins"
+            implementationClass = "com.arahelio.manager.ModulePluginManager"
+        }
+        routerPlugins{
+            id = "routerLib"
+            implementationClass = "com.arahelio.manager.ButterflyRouterManager"
+        }
+
+    }
+}
