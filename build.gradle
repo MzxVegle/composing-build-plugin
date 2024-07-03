@@ -1,12 +1,19 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-plugins{
+plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.9.0'
     id 'java-gradle-plugin'
     id 'com.google.devtools.ksp' version '1.9.0-1.0.11'
+    id 'maven-publish'
+    id "signing"
+    id("io.github.jeadyx.sonatype-uploader") version "1.0" // 用于上传生成好的文件夹
+//    id 'org.kordamp.gradle.java-project' version '0.47.0'
+    id 'org.jreleaser' version '1.13.1'
+
+//    id("eu.kakde.gradle.sonatype-maven-central-publisher") version "1.0.6"
+
+
 }
-
-
 
 
 dependencies {
@@ -17,8 +24,8 @@ dependencies {
 }
 
 
-kotlin{
-    compilerOptions{
+kotlin {
+    compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
     }
 
@@ -33,17 +40,17 @@ gradlePlugin {
             // 实现这个插件的类的路径
             implementationClass = 'com.arahelio.manager.BaseConfigManager'
         }
-        appVersion{
+        appVersion {
             id = 'versionLib'
             implementationClass = 'com.arahelio.manager.AppVersionManager'
 
         }
 
-        commonLibraries{
+        commonLibraries {
             id = "commonDep"
             implementationClass = "com.arahelio.manager.CommonDepManager"
         }
-        composeLibraries{
+        composeLibraries {
             id = "composeDep"
             implementationClass = "com.arahelio.manager.ComposeDepManager"
         }
@@ -51,14 +58,107 @@ gradlePlugin {
 //            id = "localLibDep"
 //            implementationClass = "com.vegle.manager.LocalProjectDepManager"
 //        }
-        modulePlugins{
+        modulePlugins {
             id = "modulePlugins"
             implementationClass = "com.arahelio.manager.ModulePluginManager"
         }
-        routerPlugins{
+        routerPlugins {
             id = "routerLib"
             implementationClass = "com.arahelio.manager.ButterflyRouterManager"
         }
 
     }
 }
+group = "io.github.mzxvegle"
+version = "1.0.0"
+java { // 配置生成javadoc,sources
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing { // 配置发布信息，改成适合自己的
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = "dependency"
+
+            from components.java
+            pom {
+                name = "My Library"
+                description = "A concise description of my library greennbg"
+                url = "http://www.example111.com/library"
+
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "mzxvegle"
+                        name = "mzxvegle"
+                        email = "798531805@qq.com"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git://github.com/MzxVegle/composing-build-plugin.git"
+                    developerConnection = "scm:git:ssh://github.com/MzxVegle/composing-build-plugin.git"
+                    url = "http://github.com/MzxVegle/composing-build-plugin.git"
+                }
+            }
+        }
+
+    }
+    repositories {
+        maven {
+            name = "project"
+            url = uri(layout.buildDirectory.dir("repo")) // 将要发布的文件夹生成到这个目录
+        }
+    }
+}
+
+signing { // 文件签名
+
+    sign(publishing.publications.mavenJava)
+}
+
+
+
+jreleaser {
+
+    signing {
+        active = 'ALWAYS'
+        armored = true
+        mode = 'FILE'
+        publicKey = 'public.pgp'
+        secretKey = 'private.pgp'
+        passphrase = "vegle"
+    }
+
+
+    project {
+        copyright = "1323"
+        description = "1111"
+
+
+
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    verifyPom = true
+
+                    active = 'ALWAYS'
+                    sign = true
+
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository('build/repo')
+                }
+            }
+        }
+    }
+}
+
+
+
